@@ -1,0 +1,13 @@
+# Files
+.DS_Store
+/sftp-config.json
+*.log
+# Directories
+/build
+/example/stress/test
+/doc
+!doc/Theme.css
+/node_modules
+/testing.js
+/out
+/test.git

@@ -1,0 +1,26 @@
+{
+  "name": "gitdb",
+  "version": "0.0.1",
+  "description": "",
+  "main": "server.coffee",
+  "scripts": {
+    "start": "coffee --nodejs --prof lib/server.coffee",
+    "test": "mocha --recursive --compilers coffee:coffee-script"
+  },
+  "dependencies": {
+    "express"        : "3.2.x",
+    "underscore"     : "1.4.x",
+    "ejs"            : "0.8.x",
+    "nodegit"        : "0.1.x"
+  },
+  "devDependencies": {
+    "supertest": "0.7.x"
+  },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.2.x"
+  },
+  "repository": "",
+  "author": "Nick Kallen",
+  "license": "MIT"
+}

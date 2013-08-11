@@ -11,31 +11,46 @@ show = (req, res) ->
   res.render('commits/show.html.ejs', repo: req.params.repo, commit: req.commit)
 
 create = (req, res) ->
-  blobs =
-    for file in req.params.files
-      git.blob.createFromBuffer(file)
-  branch = req.repo.master()
-  branch.getTree((error, tree) ->
+  req.repo.getCommit(req.body.parents[0], (error, commit) ->
     return res.send(500, error) if error
 
-    builder = tree.builder()
-    for file in files
-      builder.insert(file.path, file.blob)
-    builder.write(req.repo, (error, treeId) ->
+    commit.getTree((error, tree) ->
       return res.send(500, error) if error
 
-      repo.getTree(treeId, (error, treeId) ->
+      builder = tree.builder()
+
+      for insertion in req.body.tree
+        builder.insertBlob(insertion.path, new Buffer(insertion.content, insertion.encoding), insertion.filemode == git.TreeEntry.FileMode.Executable)
+
+      builder.write((error, treeId) ->
         return res.send(500, error) if error
 
-        repo.createCommit(null, author, committer, req.params.message, tree, [branch], (error, commitId) ->
+        author = git.Signature.create(req.body.author.name, req.body.author.email, 123456789, 60)
+        committer = git.Signature.create(req.body.committer.name, req.body.committer.email, 987654321, 90)
+
+        req.repo.createCommit('refs/heads/master', author, committer, req.body.message, treeId, [commit], (error, commitId) ->
           return res.send(500, error) if error
 
-          res.render('commits/create.html.ejs', repo: req.params.repo, commit: req.commit)
+          res.format(
+            'text/html': () ->
+              res.render('commits/create.html.ejs', repo: req.params.repo, commit: req.commit)
+            'application/json': () ->
+              res.send(201,
+                sha: commitId.toString(),
+                author: req.body.author
+                committer: req.body.committer
+                message: req.body.message
+                tree:
+                  sha: treeId.toString()
+                parents: [
+                  sha: req.body.parents[0]
+                ]
+              )
+          )
         )
       )
     )
   )
-
 
 module.exports =
   index: index

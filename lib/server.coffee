@@ -12,9 +12,9 @@ repo        = require('./routes/repos')
 app = express()
 
 app.use(express.responseTime())
+app.use(express.compress())
 app.use(express.bodyParser())
 app.use(express.methodOverride())
-app.use(express.compress())
 app.set('view engine', 'ejs')
 app.set('views', __dirname + '/views')
 
@@ -30,13 +30,14 @@ loadRepo = (req, res, next) ->
     next()
   )
 
-loadRef = (type) -> (req, res, next) ->
-  req.repo.getReference("refs/#{type}/#{req.params.ref}", (err, ref) ->
-    return res.send(404, err) if err 
+loadRef = (type) ->
+  (req, res, next) ->
+    req.repo.getReference("refs/#{type}/#{req.params.ref}", (err, ref) ->
+      return res.send(404, err) if err 
 
-    req.ref = ref
-    next()
-  )
+      req.ref = ref
+      next()
+    )
 
 loadHeadRef   = loadRef('heads')
 loadTagRef    = loadRef('tags')
@@ -132,9 +133,6 @@ app.get('/repos/:repo/refs/tags/:ref/*',                  [loadRepo, loadTagRef,
 app.get('/repos/:repo/blobs/:sha',                        [loadRepo, loadBlob],                                           blobs.show)
 app.get('/repos/:repo/commits/:sha',                      [loadRepo, loadCommit],                                         commits.show)
 app.get('/repos/:repo/commits/:sha/*',                    [loadRepo, loadCommit, commit2tree, loadEntry],                 treeEntries.show)
-
-app.get('/', (req, res) ->
-  res.render('index.html.ejs')
-)
+app.get('/', (req, res) -> res.render('index.html.ejs'))
 
 app.listen(process.env.PORT)

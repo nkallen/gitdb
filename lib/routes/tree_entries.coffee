@@ -2,17 +2,9 @@ git = require('nodegit')
 path = require('path')
 
 show = (req, res) ->
-  req.pathParts = req.params[0].split(path.sep)
-  req.root =
-    if req.ref
-      "/repos/#{req.params.repo}/#{req.ref.name()}"
-    else
-      "/repos/#{req.params.repo}/commits/#{req.commit}"
-  _path = req.path
-  req._path = if _path[_path.length - 1] == '/'
-    _path[0..-2]
-  else
-    _path
+  params0 = req.params[0].replace('/^\//', '')
+  req.pathParts = (part for part in params0.split(path.sep) when part)
+  req._path = params0
 
   if req.entry instanceof git.Tree
     showTree(req, res)
@@ -22,7 +14,7 @@ show = (req, res) ->
 showTree = (req, res) ->
   res.format(
     'text/html': () ->
-      res.render('tree_entries/show_tree.html.ejs', repo: req.params.repo, ref: req.ref, commit: req.commit, tree: req.entry, pathParts: req.pathParts, path: req._path, root: req.root)
+      res.render('tree_entries/show_tree.html.ejs', repo: req.params.repo, ref: req.ref, commit: req.commit, tree: req.entry, pathParts: req.pathParts, path: req._path)
     'application/json': () ->
     'application/vnd.gitdb.raw': () ->
   )
@@ -30,7 +22,7 @@ showTree = (req, res) ->
 showBlob = (req, res) ->
   res.format(
     'text/html': () ->
-      res.render('tree_entries/show_blob.html.ejs', repo: req.params.repo, ref: req.ref, commit: req.commit, blob: req.entry, pathParts: req.pathParts, path: req._path, root: req.root)
+      res.render('tree_entries/show_blob.html.ejs', repo: req.params.repo, ref: req.ref, commit: req.commit, blob: req.entry, pathParts: req.pathParts, path: req._path)
     'application/json': () ->
       res.send(200,
         filemode: req.entry.filemode()

@@ -32,7 +32,7 @@ module.exports = (repoRoot) ->
 
 
   ref2commit: (req, res, next) ->
-    req.repo.getCommit(req.ref.oid(), (err, commit) ->
+    req.repo.getCommit(req.ref.target(), (err, commit) ->
       return res.send(404, err) if err 
 
       req.commit = commit
@@ -65,24 +65,30 @@ module.exports = (repoRoot) ->
 
   entry: (req, res, next) ->
     if req.params[0] == ''
-      req.entry = req.tree
+      req.isTree = true
+      req.tree = req.tree
       next()
     else
       req.tree.getEntry(req.params[0], (err, entry) ->
         return res.send(404, err) if err
 
+        req.entry = entry
         if entry.isTree()
+          req.isTree = true
           entry.getTree((err, tree) ->
             return res.send(404, err) if err
 
-            req.entry = tree
+            req.tree = tree
+            tree.entry = entry
             next()
           )
         else
+          req.isBlob = true
           entry.getBlob((err, blob) ->
             return res.send(404, err) if err
 
-            req.entry = blob
+            req.blob = blob
+            blob.entry = entry
             next()
           )
       )

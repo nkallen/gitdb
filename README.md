@@ -4,6 +4,16 @@ The API is closely modeled on GitHub's HTTP API, with some minor divergences. Th
 
 Also, since GitDB wraps the "plumbing" rather than the "porcelain" of the Git API, if you are unfamiliar with Git's internals, it's best to start with [Chapter 8 of Pro Git]().
 
+# Design goals
+
+. High performance protocol:
+  . eliminate multiple network round-trips
+  . support compression ubiquitously
+  . support patch/delta get and set operations
+. Support atomic operations
+. High concurrency
+
+
 GET /repos/:repo
 GET /repos/:repo/refs
 GET /repos/:repo/refs/heads/:ref

@@ -25,7 +25,7 @@ url = (template) ->
     parts = for partSpec in partSpecs
       partSpec(args)
 
-    parts.join('/')
+    '/' + (part for part in parts when part).join('/')
 
 
 module.exports =
@@ -35,14 +35,15 @@ module.exports =
   headRef:            url('/repos/:repo/refs/heads/:ref')
   tagRef:             url('/repos/:repo/refs/tags/:ref')
   remoteRef:          url('/repos/:repo/refs/remotes/:remote/:ref')
-  refCommits:         url('/repos/:repo/refs/:ref/commits')
+  refCommits:         url('/repos/:repo/:ref/commits')
   headRefCommits:     url('/repos/:repo/refs/heads/:ref/commits')
   tagRefCommits:      url('/repos/:repo/refs/tags/:ref/commits')
   remoteRefCommits:   url('/repos/:repo/refs/remotes/:remote/:ref/commits')
-  refTreeEntry:       url('/repos/:repo/refs/:ref/tree/*')
+  refTreeEntry:       url('/repos/:repo/:ref/tree/*')
   headRefTreeEntry:   url('/repos/:repo/refs/heads/:ref/tree/*')
   remoteRefTreeEntry: url('/repos/:repo/refs/remotes/:remote/:ref/tree/*')
   tagRefTreeEntry:    url('/repos/:repo/refs/tags/:ref/tree/*')
   blob:               url('/repos/:repo/blobs/:sha')
+  commits:            url('/repos/:repo/commits')
   commit:             url('/repos/:repo/commits/:sha')
   commitTreeEntry:    url('/repos/:repo/commits/:sha/tree/*')

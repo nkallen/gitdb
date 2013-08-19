@@ -1,12 +1,12 @@
 git = require('nodegit')
-path = require('path')
+render = require('../util/render')
 
 show = (req, res) ->
   params0 = req.params[0].replace('/^\//', '')
-  req.pathParts = (part for part in params0.split(path.sep) when part)
+  req.pathParts = (part for part in params0.split('/') when part)
   req._path = params0
 
-  if req.entry instanceof git.Tree
+  if req.isTree
     showTree(req, res)
   else
     showBlob(req, res)
@@ -14,29 +14,25 @@ show = (req, res) ->
 showTree = (req, res) ->
   res.format(
     'text/html': () ->
-      res.render('tree_entries/show_tree.html.ejs', repo: req.params.repo, ref: req.ref, commit: req.commit, tree: req.entry, pathParts: req.pathParts, path: req._path)
+      res.render('tree_entries/show_tree.html.ejs', repo: req.params.repo, ref: req.ref, commit: req.commit, tree: req.tree, pathParts: req.pathParts, path: req._path)
     'application/json': () ->
-    'application/vnd.gitdb.raw': () ->
+      json = render.treeEntry(req.entry)
+      json.tree = render.tree(req.tree)
+      json.commit = render.commit(req.commit)
+      res.json(json)
   )
 
 showBlob = (req, res) ->
   res.format(
     'text/html': () ->
-      res.render('tree_entries/show_blob.html.ejs', repo: req.params.repo, ref: req.ref, commit: req.commit, blob: req.entry, pathParts: req.pathParts, path: req._path)
+      res.render('tree_entries/show_blob.html.ejs', repo: req.params.repo, ref: req.ref, commit: req.commit, blob: req.blob, pathParts: req.pathParts, path: req._path)
     'application/json': () ->
-      res.send(200,
-        filemode: req.entry.filemode()
-        encoding: encoding = "base64"
-        size: req.entry.size()
-        name: req.pathParts[req.pathParts.length - 1]
-        path: req.params[0]
-        content: req.entry.content().toString(encoding)
-        sha: req.entry.oid().toString()
-        commit:
-          sha: req.commit.oid().toString()
-      )
+      json = render.treeEntry(req.entry)
+      json.blob = render.blob(req.blob)
+      json.commit = render.commit(req.commit)
+      res.json(json)
     'application/vnd.gitdb.raw': () ->
-      res.send(200, req.entry.toString())
+      res.json(req.blob.toString())
   )
 
 module.exports =

@@ -5,15 +5,19 @@ path = require('path')
 Preload data for controller *and* view tiers. cf, http://expressjs.com/api.html#res.locals
 ###
 
-module.exports = (repoRoot) ->
+module.exports = (resolver) ->
   repo: (req, res, next) ->
-    git.Repo.open(path.join(repoRoot, req.params.repo, '.git'), (err, repo) ->
+    git.Repo.open(resolver.resolve(req.params.repo), (err, repo) ->
       return res.send(404, err) if err 
 
       repo.toString = () -> req.params.repo
       req.repo = res.locals.repo = repo
       next()
     )
+
+  repos: (req, res, next) ->
+    req.repos = res.locals.repos = resolver.list()
+    next()
 
   headRef: ref('heads')
   tagRef:  ref('tags')

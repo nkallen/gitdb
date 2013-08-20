@@ -1,6 +1,3 @@
-. move config to json
-. repo index
-
 . individual file update / individual file commit
 . support deltas/patches
 

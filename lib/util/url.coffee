@@ -30,6 +30,7 @@ url = (template) ->
 
 module.exports =
   repo:               url('/repos/:repo')
+  repos:              url('/repos')
   refs:               url('/repos/:repo/refs')
   ref:                url('/repos/:repo/:ref')
   headRef:            url('/repos/:repo/refs/heads/:ref')

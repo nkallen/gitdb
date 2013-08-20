@@ -1,32 +1,27 @@
 git = require('nodegit')
 path = require('path')
 
+###
+Preload data for controller *and* view tiers. cf, http://expressjs.com/api.html#res.locals
+###
+
 module.exports = (repoRoot) ->
-  ref = (type) ->
-    (req, res, next) ->
-      req.repo.getReference("refs/#{type}/#{req.params.ref}", (err, ref) ->
-        return res.send(404, err) if err 
-
-        req.ref = ref
-        next()
-      )
-
   repo: (req, res, next) ->
     git.Repo.open(path.join(repoRoot, req.params.repo, '.git'), (err, repo) ->
       return res.send(404, err) if err 
 
-      req.repo = repo
+      req.repo = res.locals.repo = repo
       next()
     )
 
-  headRef:  ref('heads')
-  tagRef: ref('tags')
+  headRef: ref('heads')
+  tagRef:  ref('tags')
 
   remoteRef: (req, res, next) ->
     req.repo.getReference("refs/remotes/#{req.params.remote}/#{req.params.ref}", (err, ref) ->
       return res.send(404, err) if err 
 
-      req.ref = ref
+      req.ref = res.locals.ref = ref
       next()
     )
 
@@ -35,7 +30,7 @@ module.exports = (repoRoot) ->
     req.repo.getCommit(req.ref.target(), (err, commit) ->
       return res.send(404, err) if err 
 
-      req.commit = commit
+      req.commit = res.locals.commit = commit
       next()
     )
 
@@ -43,15 +38,32 @@ module.exports = (repoRoot) ->
     req.commit.getTree((err, tree) ->
       return res.send(404, err) if err 
 
-      req.tree = tree
+      req.tree = res.locals.tree = tree
       next()
     )
+
+  commit2history: (req, res, next) ->
+    req.commits = res.locals.commits = []
+    history = req.commit.history()
+    history.on('commit', (commit) -> req.commits.push(commit))
+    history.on('end', -> next())
+    history.on('error', (err) -> res.send(500, err))
+    history.start()
+
+  repo2refs: (req, res, next) ->
+    req.repo.getReferences(git.Reference.Type.All, (err, refs) ->
+      return res.send(500) if err
+
+      req.refs = res.locals.refs = refs
+      next()
+    )
+
 
   blob: (req, res, next) ->
     req.repo.getBlob(req.params.sha, (err, blob) ->
       return res.send(404, err) if err 
 
-      req.blob = blob
+      req.blob = res.locals.blob = blob
       next()
     )
 
@@ -59,27 +71,26 @@ module.exports = (repoRoot) ->
     req.repo.getCommit(req.params.sha, (err, commit) ->
       return res.send(404, err) if err
 
-      req.commit = commit
+      req.commit = res.locals.commit = commit
       next()
     )
 
   entry: (req, res, next) ->
     if req.params[0] == ''
       req.isTree = true
-      req.tree = req.tree
+      req.tree = res.locals.tree = req.tree
       next()
     else
       req.tree.getEntry(req.params[0], (err, entry) ->
         return res.send(404, err) if err
 
-        req.entry = entry
+        req.entry = res.locals.entry = entry
         if entry.isTree()
           req.isTree = true
           entry.getTree((err, tree) ->
             return res.send(404, err) if err
 
-            req.tree = tree
-            tree.entry = entry
+            req.tree = res.locals.tree = tree
             next()
           )
         else
@@ -87,8 +98,16 @@ module.exports = (repoRoot) ->
           entry.getBlob((err, blob) ->
             return res.send(404, err) if err
 
-            req.blob = blob
-            blob.entry = entry
+            req.blob = res.locals.blob = blob
             next()
           )
       )
+
+ref = (type) ->
+  (req, res, next) ->
+    req.repo.getReference("refs/#{type}/#{req.params.ref}", (err, ref) ->
+      return res.send(404, err) if err 
+
+      req.ref = res.locals.ref = ref
+      next()
+    )

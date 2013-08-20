@@ -2,23 +2,17 @@ git = require('nodegit')
 render = require('../util/render')
 
 index = (req, res) ->
-  commits = []
-  history = req.commit.history()
-  history.on('commit', (commit) -> commits.push(commit))
-  history.on('end', ->
-    res.format(
-      'text/html': () ->
-        res.render('commits/index.html.ejs', repo: req.params.repo, ref: req.ref, commits: commits)
-      'application/json': () ->
-        res.json(render.commit(commit) for commit in commits)
-    )
+  res.format(
+    'text/html': () ->
+      res.render('commits/index.html.ejs')
+    'application/json': () ->
+      res.json(render.commit(commit) for commit in req.commits)
   )
-  history.start()
 
 show = (req, res) ->
   res.format(
     'text/html': () ->
-      res.render('commits/show.html.ejs', repo: req.params.repo, commit: req.commit)
+      res.render('commits/show.html.ejs')
     'application/json': () ->
       res.json(render.commit(req.commit))
   )

@@ -1,11 +1,14 @@
-. add locals to load.coffee
+. urls everywhere
 . make sure all <a> tags outside of <button> tags
-. move config to json
-. publish basic latency stats
+. tree controller
+. repo index
+
 . individual file update / individual file commit
 . support deltas/patches
-. support commit ranges
-. tree controller
 . commit with tree id
+
+
 . refs needs to return object
-. repo index
+. support commit ranges
+. move config to json
+. publish basic latency stats

@@ -3,7 +3,7 @@ render = require('../util/render')
 show = (req, res) ->
   res.format(
     'text/html': () ->
-      res.render('blobs/show.html.ejs', repo: req.params.repo, blob: req.blob)
+      res.render('blobs/show.html.ejs')
     'application/json': () ->
       res.json(render.blob(req.blob))
     'application/vnd.gitdb.raw': () ->

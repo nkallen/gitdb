@@ -37,6 +37,7 @@ app.get(url.blob(),               [load.repo, load.blob],                       
 app.put(url.commits(),            [load.repo],                                                                commits.create)
 app.get(url.commit(),             [load.repo, load.commit],                                                   commits.show)
 app.get(url.commitTreeEntry(),    [load.repo, load.commit, load.commit2tree, load.entry],                     treeEntries.show)
+app.get(url.tree(),               [load.repo, load.tree, load.entry],                                         treeEntries.show)
 app.get('/', (req, res) -> res.render('index.html.ejs'))
 
 module.exports = app

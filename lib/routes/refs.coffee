@@ -6,7 +6,7 @@ index = (req, res) ->
     'text/html': () ->
       res.render('refs/index.html.ejs')
     'application/json': () ->
-      res.json(render.refName(ref) for ref in req.refs)
+      res.json(render.refName(res.locals, ref) for ref in req.refs)
   )
 
 show = (req, res) ->
@@ -14,7 +14,7 @@ show = (req, res) ->
     'text/html': () ->
       res.render('refs/show.html.ejs')
     'application/json': () ->
-      res.json(render.ref(req.ref))
+      res.json(render.ref(res.locals, req.ref))
   )
 
 create = (req, res) ->

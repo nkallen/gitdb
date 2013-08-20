@@ -6,7 +6,7 @@ show = (req, res) ->
     'text/html': () ->
       res.render('repos/show.html.ejs')
     'application/json': () ->
-      res.json(render.repo(req.repo))
+      res.json(render.repo(res.locals, req.repo))
   )
 
 module.exports =

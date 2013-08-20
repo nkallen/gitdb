@@ -10,6 +10,7 @@ module.exports = (repoRoot) ->
     git.Repo.open(path.join(repoRoot, req.params.repo, '.git'), (err, repo) ->
       return res.send(404, err) if err 
 
+      repo.toString = () -> req.params.repo
       req.repo = res.locals.repo = repo
       next()
     )
@@ -58,6 +59,13 @@ module.exports = (repoRoot) ->
       next()
     )
 
+  tree: (req, res, next) ->
+    req.commit.getTree((err, tree) ->
+      return res.send(404, err) if err 
+
+      req.tree = res.locals.tree = tree
+      next()
+    )
 
   blob: (req, res, next) ->
     req.repo.getBlob(req.params.sha, (err, blob) ->
@@ -77,7 +85,7 @@ module.exports = (repoRoot) ->
 
   entry: (req, res, next) ->
     if req.params[0] == ''
-      req.isTree = true
+      req.isTree = res.locals.isTree = true
       req.tree = res.locals.tree = req.tree
       next()
     else
@@ -86,7 +94,7 @@ module.exports = (repoRoot) ->
 
         req.entry = res.locals.entry = entry
         if entry.isTree()
-          req.isTree = true
+          req.isTree = res.locals.isTree = true
           entry.getTree((err, tree) ->
             return res.send(404, err) if err
 
@@ -94,7 +102,7 @@ module.exports = (repoRoot) ->
             next()
           )
         else
-          req.isBlob = true
+          req.isBlob = res.locals.isBlob = true
           entry.getBlob((err, blob) ->
             return res.send(404, err) if err
 

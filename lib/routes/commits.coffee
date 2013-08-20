@@ -6,7 +6,7 @@ index = (req, res) ->
     'text/html': () ->
       res.render('commits/index.html.ejs')
     'application/json': () ->
-      res.json(render.commit(commit) for commit in req.commits)
+      res.json(render.commit(res.locals, commit) for commit in req.commits)
   )
 
 show = (req, res) ->
@@ -14,7 +14,7 @@ show = (req, res) ->
     'text/html': () ->
       res.render('commits/show.html.ejs')
     'application/json': () ->
-      res.json(render.commit(req.commit))
+      res.json(render.commit(res.locals, req.commit))
   )
 
 create = (req, res) ->
@@ -41,7 +41,7 @@ create = (req, res) ->
             return res.send(500, error) if error
 
             res.format(
-              'application/json': () -> res.send(201, render.commit(commit))
+              'application/json': () -> res.send(201, render.commit(res.locals, commit))
             )
           )
         )

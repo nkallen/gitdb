@@ -5,7 +5,7 @@ show = (req, res) ->
     'text/html': () ->
       res.render('blobs/show.html.ejs')
     'application/json': () ->
-      res.json(render.blob(req.blob))
+      res.json(render.blob(res.locals, req.blob))
     'application/vnd.gitdb.raw': () ->
       res.json(req.blob.content())
   )

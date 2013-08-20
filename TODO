@@ -1,14 +1,12 @@
-. urls everywhere
-. make sure all <a> tags outside of <button> tags
-. tree controller
+. move config to json
 . repo index
 
 . individual file update / individual file commit
 . support deltas/patches
+
+. publish basic latency stats
+
+
 . commit with tree id
-
-
 . refs needs to return object
 . support commit ranges
-. move config to json
-. publish basic latency stats

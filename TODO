@@ -3,7 +3,6 @@
 
 . publish basic latency stats
 
-
 . commit with tree id
 . refs needs to return object
 . support commit ranges

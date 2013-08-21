@@ -64,7 +64,7 @@ module.exports = (resolver) ->
     )
 
   tree: (req, res, next) ->
-    req.commit.getTree((err, tree) ->
+    req.repo.getTree(req.params.sha, (err, tree) ->
       return res.send(404, err) if err 
 
       req.tree = res.locals.tree = tree
@@ -91,6 +91,8 @@ module.exports = (resolver) ->
     if req.params[0] == ''
       req.isTree = res.locals.isTree = true
       req.tree = res.locals.tree = req.tree
+      req.entry = res.locals.entry = new RootEntry
+      req.entry.oid = () -> req.tree.oid()
       next()
     else
       req.tree.getEntry(req.params[0], (err, entry) ->
@@ -114,6 +116,14 @@ module.exports = (resolver) ->
             next()
           )
       )
+
+class RootEntry
+  name: () -> ''
+  path: () -> ''
+  toString: () -> ''
+  filemode: () -> git.TreeEntry.FileMode.Tree
+  isTree: () -> true
+  isBlob: () -> false
 
 ref = (type) ->
   (req, res, next) ->

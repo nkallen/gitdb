@@ -43,7 +43,7 @@ describe 'commits', ->
     describe 'json', ->
       it 'works', (done) ->
         request(app)
-          .put(uri)
+          .post(uri)
           .set('Accept', 'application/json')
           .send(
             message: 'Get on the bus, gus'
@@ -51,6 +51,7 @@ describe 'commits', ->
             tree: [
               path: 'README.md'
               content: 'Get on the bus, Gus'
+              encoding: 'utf8'
               filemode: git.TreeEntry.FileMode.Blob
             ]
             author:

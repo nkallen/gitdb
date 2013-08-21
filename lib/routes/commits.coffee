@@ -1,5 +1,6 @@
 git = require('nodegit')
 render = require('../util/render')
+url = require('../util/url')
 
 index = (req, res) ->
   res.format(
@@ -41,7 +42,9 @@ create = (req, res) ->
             return res.send(500, error) if error
 
             res.format(
-              'application/json': () -> res.send(201, render.commit(res.locals, commit))
+              'application/json': () ->
+                res.location(url.commit(req.repo, commit))
+                res.send(201, render.commit(res.locals, commit))
             )
           )
         )

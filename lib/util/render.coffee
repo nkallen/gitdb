@@ -2,15 +2,13 @@ git = require('nodegit')
 url = require('./url')
 
 blob = (locals, blob, hideContext) ->
-  throw "blob is null" unless blob
-
   result =
     filemode: blob.filemode()
     encoding: encoding = "base64"
     size: blob.size()
     content: blob.content().toString(encoding)
     sha: blob.oid().toString()
-    url: url.blob(locals.repo, blob)
+    url: url.blob(locals.repo, blob.oid())
 
   if !hideContext
     result.commit = commit(locals, locals.commit) if locals.commit
@@ -21,7 +19,8 @@ blob = (locals, blob, hideContext) ->
 tree = (locals, tree, hideContext) ->
   result = 
     sha: tree.oid().toString()
-    url: url.tree(locals.repo, tree)
+    url: url.treeEntry(locals.repo, tree.oid())
+    entries: treeEntry(locals, entry, true) for entry in tree.entries()
 
   if !hideContext
     result.commit = commit(locals, locals.commit) if locals.commit
@@ -30,8 +29,6 @@ tree = (locals, tree, hideContext) ->
   result
 
 treeEntry = (locals, entry, hideContext) ->
-  throw "entry is null" unless entry
-
   result =
     name: entry.name()
     path: entry.path()
@@ -44,26 +41,30 @@ treeEntry = (locals, entry, hideContext) ->
         when git.TreeEntry.FileMode.Commit then "commit"
         when git.TreeEntry.FileMode.New    then "new"
     filemode: entry.filemode()
-    url: url.commitTreeEntry(locals.repo, locals.commit, entry)
+    commit_relative_url: url.commitTreeEntry(locals.repo, locals.commit, entry)
+    tree_relative_url: url.treeEntry(locals.repo, locals.tree.oid(), entry)
 
   result.ref_relative_url = url.refTreeEntry(locals.repo, locals.ref, entry) if locals.ref
 
-  if locals.isTree
-    result.tree =
-      tree(locals, locals.tree, true)
-  else if locals.isBlob
-    result.blob =
-      blob(locals, locals.blob, true)
+  if entry.isTree()
+    result.url = url.treeEntry(locals.repo, entry.oid())
+  else if entry.isBlob()
+    result.url = url.blob(locals.repo, entry.oid())
 
   if !hideContext
+    if entry.isTree()
+      result.tree =
+        tree(locals, locals.tree, true)
+    else if entry.isBlob()
+      result.blob =
+        blob(locals, locals.blob, true)
+
     result.commit = commit(locals, locals.commit) if locals.commit
     result.ref = ref(locals, locals.ref)          if locals.ref
     result.repo = repo(locals, locals.repo)       if locals.repo
   result
 
 commit = (locals, commit, hideContext) ->
-  throw "commit is null" unless commit
-
   result =
     sha: commit.oid().toString()
     message: commit.message()
@@ -71,7 +72,7 @@ commit = (locals, commit, hideContext) ->
     committer: signature(commit.committer())
     tree:
       sha: commit.treeId().toString()
-    parents: commit.parents()
+    parents: { sha: parent.toString(), url: url.commit(locals.repo, parent) } for parent in commit.parents()
     url: url.commit(locals.repo, commit)
     tree_url: url.commitTreeEntry(locals.repo, commit)
   if !hideContext
@@ -79,8 +80,6 @@ commit = (locals, commit, hideContext) ->
   result
 
 ref = (locals, ref, hideContext) ->
-  throw "ref is null" unless ref
-
   result =
     name: ref.name()
     type: ref.type()
@@ -98,19 +97,15 @@ ref = (locals, ref, hideContext) ->
   result
 
 refName = (locals, refName, hideContext) ->
-  throw "refName is null" unless refName
-
   name: refName
   url: url.ref(locals.repo, refName)
 
 repo = (locals, repo, hideContext) ->
-  throw "repo is null" unless repo
-
   url: url.repo(repo)
   refs_url: url.refs(repo)
 
 signature = (signature) ->
-  date: new Date(signature.time.time * 1000 + signature.time.offset * 60 * 1000)
+  date: new Date(signature.time().time() * 1000 + signature.time().offset() * 60 * 1000)
   name: signature.name()
   email: signature.email()
 

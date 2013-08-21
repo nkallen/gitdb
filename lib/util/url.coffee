@@ -25,7 +25,7 @@ url = (template) ->
     parts = for partSpec in partSpecs
       partSpec(args)
 
-    '/' + (part for part in parts when part).join('/')
+    (part for part in parts).join('/')
 
 
 module.exports =
@@ -48,4 +48,4 @@ module.exports =
   commits:            url('/repos/:repo/commits')
   commit:             url('/repos/:repo/commits/:sha')
   commitTreeEntry:    url('/repos/:repo/commits/:sha/tree/*')
-  tree:               url('/repos/:repo/trees/:sha/*')
+  treeEntry:          url('/repos/:repo/trees/:sha/*')

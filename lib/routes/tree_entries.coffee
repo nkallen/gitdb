@@ -1,5 +1,6 @@
 git = require('nodegit')
 render = require('../util/render')
+url = require('../util/url')
 
 show = (req, res) ->
   params0 = res.locals.path = req.params[0].replace('/^\//', '')
@@ -27,5 +28,55 @@ showBlob = (req, res) ->
       res.json(req.blob.toString())
   )
 
+update = (req, res) ->
+  return res.send(500, 'can only update a ref') unless req.ref
+  return res.send(500, 'can only create or update a blob') if req.entry && !req.isBlob
+  return res.send(412, 'must provide previous_sha') if req.entry && !req.body.previous_sha
+  return res.send(412, 'previous_sha does not match') unless req.body.previous_sha == req.blob.oid().toString()
+
+  builder = req.tree.builder()
+  builder.insertBlob(req.params[0], new Buffer(req.body.content, req.body.encoding), req.body.filemode == git.TreeEntry.FileMode.Executable)
+
+  builder.write((error, treeId) ->
+    return res.send(500, error) if error
+
+    author = git.Signature.create(req.body.author.name, req.body.author.email, 123456789, 60)
+    committer = git.Signature.create(req.body.committer.name, req.body.committer.email, 987654321, 90)
+
+    req.repo.createCommit(req.ref.toString(), author, committer, req.body.message, treeId, [req.commit], (error, commitId) ->
+      return res.send(500, error) if error
+
+      req.repo.getCommit(commitId, (err, commit) ->
+        return res.send(500, error) if error
+
+        res.locals.commit = commit
+        commit.getTree((error, tree) ->
+          return res.send(500, error) if error
+
+          tree.getEntry(req.params[0], (error, entry) ->
+            return res.send(500, error) if error
+
+            res.locals.entry = entry
+            entry.getBlob((error, blob) ->
+              return res.send(500, error) if error
+
+              res.locals.blob = blob
+              res.format(
+                'application/json': () ->
+                  if req.entry
+                    code = 201
+                    res.location(url.blob(req.repo, blob.oid()))
+                  else
+                    code = 200
+                  res.send(code, render.treeEntry(res.locals, entry))
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+
 module.exports =
   show: show
+  update: update

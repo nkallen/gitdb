@@ -10,10 +10,10 @@ One reason to use git as a datastore is that it models well the revision history
 
 GitDB is designed to be both low latency and convenient. Its API:
 
-. minimizes network round-trips
-. supports compression ubiquitously
-. support patch/delta get and set operations
-. supports high concurrency thanks to an asynchronous programming model
+* minimizes network round-trips
+* supports compression ubiquitously
+* support patch/delta get and set operations
+* supports high concurrency thanks to an asynchronous programming model
 
 Finally, the API conveniently supports a variety of atomic-write and snapshot-read operations.
 
@@ -468,9 +468,73 @@ Since blobs can be any arbitrary binary data, the input and responses for the bl
       }
     }
 
+#### Create or update a blob on a ref
+
+This method creates or updates a blob (file) in a repository, creates a new commit, and updates the head pointer of the ref. This is a more surgical version of `POST /repos/:repo/refs/:ref/commits`.
+
+    PUT /repos/:repo/refs/:ref/tree/*
+
+##### Parameters
+
+###### previous_sha
+
+The sha of the previous version of the blob. The sha must match the current version of the blob on the ref, otherwise the server will return an HTTP 412 error code.
+
+###### message
+
+String of the commit message
+
+###### author
+
+Hash representing author of the code in the commit.
+
+      "author": {
+        "name": "Scott Chacon",
+        "email": "schacon@gmail.com",
+        "date": "2008-07-09T16:13:30+12:00"
+      }
+
+###### committer
+
+Same format as author; represents the user who performed the commit.
+
+###### filemode
+
+Indicates whether the file is binary or not. Valid values are `33188` (not binary) and `33261` (binary).
+
+###### content
+
+An encoded string representation of the file.
+
+###### encoding
+
+Supported encodings for the content include `ascii`, `utf8`, and `base64`.
+
+##### Example Input
+
+    {
+      "message": "a new commit",
+      "previous_sha": "73720a4c31acc9563d65483614b46901315646c1",
+      "author": {
+        "name": "Scott Chacon",
+        "email": "schacon@gmail.com",
+        "date": "2008-07-09T16:13:30+12:00"
+      },
+      "committer": {
+        "name": "Scott Chacon",
+        "email": "schacon@gmail.com",
+        "date": "2008-07-09T16:13:30+12:00"
+      },
+      "content": "Get on the bus, Gus",
+      "encoding": "utf8",
+      "filemode": 33188
+    }
+
+##### Response
+
 ### Blobs
 
-#### Get a Blob
+#### Get a blob
 
 Since blobs can be any arbitrary binary data, the input and responses for the blob API is returned encoded. Currently all data is base64 encoded, but for future compatibility, please use the `encoding` field when decoding data. Note that the media type `application/vnd.gitdb.raw` is also supported for blobs.
 
@@ -479,12 +543,49 @@ Since blobs can be any arbitrary binary data, the input and responses for the bl
 ##### Response
 
     {
+      "name": "README.md",
+      "path": "README.md",
+      "type": "blob",
       "filemode": 33188,
-      "encoding": "base64",
-      "size": 1276,
-      "content": "KipHaXREQioqIGl...",
-      "sha": "5c5ac45d9513562cc96e8e7021a8064009451ed8",
+      "commit_relative_url": "/repos/gitdb/commits/38f8d228f43f53bc42a77d5821aece4f09e66ca7/tree/README.md",
       "url": "/repos/gitdb/blobs/5c5ac45d9513562cc96e8e7021a8064009451ed8",
+      "blob": {
+        "filemode": 33188,
+        "encoding": "base64",
+        "size": 1276,
+        "content": "KipHaXREQioqI...",
+        "sha": "5c5ac45d9513562cc96e8e7021a8064009451ed8",
+        "url": "/repos/gitdb/blobs/5c5ac45d9513562cc96e8e7021a8064009451ed8"
+      },
+      "commit": {
+        "sha": "38f8d228f43f53bc42a77d5821aece4f09e66ca7",
+        "message": "Better web navigation\n",
+        "author": {
+          "date": "2013-08-20T15:54:42.000Z",
+          "name": "Nick Kallen",
+          "email": "socialmediamaster9000@gmail.com"
+        },
+        "committer": {
+          "date": "2013-08-20T15:54:42.000Z",
+          "name": "Nick Kallen",
+          "email": "socialmediamaster9000@gmail.com"
+        },
+        "tree": {
+          "sha": "93fb384f1f8bfac23a2fbef7f4c40a345a0fd312"
+        },
+        "parents": [
+          {
+            "sha": "a3ba5a6e314ed63571e01677463164cb7a8a1e9b",
+            "url": "/repos/gitdb/commits/a3ba5a6e314ed63571e01677463164cb7a8a1e9b"
+          }
+        ],
+        "url": "/repos/gitdb/commits/38f8d228f43f53bc42a77d5821aece4f09e66ca7",
+        "tree_url": "/repos/gitdb/commits/38f8d228f43f53bc42a77d5821aece4f09e66ca7/tree/",
+        "repo": {
+          "url": "/repos/gitdb",
+          "refs_url": "/repos/gitdb/refs"
+        }
+      },
       "repo": {
         "url": "/repos/gitdb",
         "refs_url": "/repos/gitdb/refs"

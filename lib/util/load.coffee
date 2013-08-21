@@ -30,7 +30,6 @@ module.exports = (resolver) ->
       next()
     )
 
-
   ref2commit: (req, res, next) ->
     req.repo.getCommit(req.ref.target(), (err, commit) ->
       return res.send(404, err) if err 
@@ -87,35 +86,21 @@ module.exports = (resolver) ->
       next()
     )
 
-  entry: (req, res, next) ->
-    if req.params[0] == ''
-      req.isTree = res.locals.isTree = true
-      req.tree = res.locals.tree = req.tree
-      req.entry = res.locals.entry = new RootEntry
-      req.entry.oid = () -> req.tree.oid()
-      next()
-    else
-      req.tree.getEntry(req.params[0], (err, entry) ->
-        return res.send(404, err) if err
+  parentCommit: (req, res, next) ->
+    req.repo.getCommit(req.body.parents[0], (error, commit) ->
+      return res.send(404, error) if error
+      req.commit = res.locals.commit = commit
 
-        req.entry = res.locals.entry = entry
-        if entry.isTree()
-          req.isTree = res.locals.isTree = true
-          entry.getTree((err, tree) ->
-            return res.send(404, err) if err
+      commit.getTree((error, tree) ->
+        return res.send(500, error) if error
 
-            req.tree = res.locals.tree = tree
-            next()
-          )
-        else
-          req.isBlob = res.locals.isBlob = true
-          entry.getBlob((err, blob) ->
-            return res.send(404, err) if err
-
-            req.blob = res.locals.blob = blob
-            next()
-          )
+        req.tree = res.locals.tree = tree
+        next()
       )
+    )
+
+  entryOptional: entry(true)
+  entry: entry(false)
 
 class RootEntry
   name: () -> ''
@@ -132,4 +117,35 @@ ref = (type) ->
 
       req.ref = res.locals.ref = ref
       next()
+    )
+
+entry = (isOptional) -> (req, res, next) ->
+  if req.params[0] == ''
+    req.isTree = res.locals.isTree = true
+    req.tree = res.locals.tree = req.tree
+    req.entry = res.locals.entry = new RootEntry
+    req.entry.oid = () -> req.tree.oid()
+    next()
+  else
+    req.tree.getEntry(req.params[0], (err, entry) ->
+      return res.send(404, err) if err && !isOptional
+      next() if err && isOptional
+
+      req.entry = res.locals.entry = entry
+      if entry.isTree()
+        req.isTree = res.locals.isTree = true
+        entry.getTree((err, tree) ->
+          return res.send(404, err) if err
+
+          req.tree = res.locals.tree = tree
+          next()
+        )
+      else
+        req.isBlob = res.locals.isBlob = true
+        entry.getBlob((err, blob) ->
+          return res.send(404, err) if err
+
+          req.blob = res.locals.blob = blob
+          next()
+        )
     )

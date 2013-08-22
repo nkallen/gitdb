@@ -1,7 +1,10 @@
+. deploy via elastic beanstalk
+
+LATER
+
 . support deltas/patches
-
+. tree resource with GET/POST
+  . POST commit/create should accept tree id
 . publish basic latency stats
-
-. commit with tree id
 . refs needs to return object
 . support commit ranges

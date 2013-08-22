@@ -18,10 +18,12 @@ show = (req, res) ->
       res.json(render.commit(res.locals, req.commit))
   )
 
-create = (req, res) ->
-  return res.send(412, 'must provide parents') unless req.body.parents
-  return res.send(412, 'at least one parent must match sha of ref') unless req.body.parents.indexOf(req.commit.oid().sha()) > -1
+update = (req, res) ->
+  return res.send(400) unless req.get('If-Match')
+  return res.send(412) unless req.commit.oid().sha() == req.get('If-Match')
+  create(req, res)
 
+create = (req, res) ->
   builder = req.tree.builder()
   for insertion in req.body.tree
     builder.insertBlob(insertion.path, new Buffer(insertion.content, insertion.encoding), insertion.filemode == git.TreeEntry.FileMode.Executable)
@@ -47,7 +49,10 @@ create = (req, res) ->
     )
   )
 
+treeId2commit = (req, res) ->
+
 module.exports =
   index: index
   show: show
   create: create
+  update: update

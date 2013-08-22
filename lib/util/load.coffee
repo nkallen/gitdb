@@ -46,6 +46,14 @@ module.exports = (resolver) ->
       next()
     )
 
+  commit2diffList: (req, res, next) ->
+    req.commit.getDiff((err, diffList) ->
+      return res.send(500, err) if err
+
+      req.diffList = res.locals.diffList = diffList
+      next()
+    )
+
   commit2history: (req, res, next) ->
     req.commits = res.locals.commits = []
     history = req.commit.history()
@@ -56,7 +64,7 @@ module.exports = (resolver) ->
 
   repo2refs: (req, res, next) ->
     req.repo.getReferences(git.Reference.Type.All, (err, refs) ->
-      return res.send(500) if err
+      return res.send(500, err) if err
 
       req.refs = res.locals.refs = refs
       next()
@@ -87,12 +95,12 @@ module.exports = (resolver) ->
     )
 
   parentCommit: (req, res, next) ->
-    req.repo.getCommit(req.body.parents[0], (error, commit) ->
-      return res.send(404, error) if error
+    req.repo.getCommit(req.body.parents[0], (err, commit) ->
+      return res.send(404, err) if err
       req.commit = res.locals.commit = commit
 
-      commit.getTree((error, tree) ->
-        return res.send(500, error) if error
+      commit.getTree((err, tree) ->
+        return res.send(500, err) if err
 
         req.tree = res.locals.tree = tree
         next()

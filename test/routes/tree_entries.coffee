@@ -59,9 +59,9 @@ describe 'tree_entries', ->
             request(app)
               .put(uri)
               .set('Accept', 'application/json')
+              .set('If-Match', previousSha)
               .send(
                 message: 'A new idea for a song lyric ' + new Date()
-                previous_sha: previousSha
                 content: 'Get on the bus, Gus'
                 encoding: 'utf8'
                 filemode: git.TreeEntry.FileMode.Blob

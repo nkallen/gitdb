@@ -5,7 +5,7 @@ git = require('nodegit')
 
 describe 'commits', ->
   describe 'index', ->
-    uri = '/repos/gitdb/refs/heads/master/commits'
+    uri = '/repos/gitdb/refs/heads/master/log'
     describe 'html', ->
       it 'works', (done) ->
         request(app)
@@ -37,6 +37,44 @@ describe 'commits', ->
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .expect(200, done)
+
+  describe 'update', ->
+    uri = '/repos/gitdb/refs/heads/test'
+    describe 'json', ->
+      it 'works', (done) ->
+        request(app)
+          .get(uri)
+          .set('Accept', 'application/json')
+          .expect(200)
+          .end((error, res) ->
+            previousSha = res.body.object.sha
+
+            request(app)
+              .patch(uri)
+              .set('Accept', 'application/json')
+              .set('If-Match', previousSha)
+              .send(
+                message: 'A new idea for a song lyric ' + new Date()
+                tree: [
+                  path: 'README.md'
+                  content: 'Get on the bus, Gus'
+                  encoding: 'utf8'
+                  filemode: git.TreeEntry.FileMode.Blob
+                ]
+                author:
+                  name: 'Paul Simon'
+                  email: 'paul@simon.com'
+                  time: new Date()
+                  offset: 0
+                committer:
+                  name: 'Art Garfunkle'
+                  email: 'art@garfunkle.com'
+                  time: new Date()
+                  offset: 0
+              )
+              .expect('Content-Type', /json/)
+              .expect(201, done)
+          )
 
   describe 'create', ->
     uri = '/repos/gitdb/commits'

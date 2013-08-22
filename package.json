@@ -11,7 +11,7 @@
     "express"        : "3.2.x",
     "underscore"     : "1.4.x",
     "ejs"            : "0.8.x",
-    "nodegit"        : "0.1.x"
+    "nodegit"        : "git://github.com/nodegit/nodegit.git#wip"
   },
   "devDependencies": {
     "supertest": "0.7.x"

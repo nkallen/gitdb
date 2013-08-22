@@ -29,10 +29,9 @@ showBlob = (req, res) ->
   )
 
 update = (req, res) ->
-  return res.send(500, 'can only update a ref') unless req.ref
-  return res.send(500, 'can only create or update a blob') if req.entry && !req.isBlob
-  return res.send(412, 'must provide previous_sha') if req.entry && !req.body.previous_sha
-  return res.send(412, 'previous_sha does not match') unless req.body.previous_sha == req.blob.oid().toString()
+  return res.send(422, 'can only create or update a blob') if req.entry && !req.isBlob
+  return res.send(400) unless req.get('If-Match')
+  return res.send(412, 'If-Match fails') unless req.blob.oid().sha() == req.get('If-Match')
 
   builder = req.tree.builder()
   builder.insertBlob(req.params[0], new Buffer(req.body.content, req.body.encoding), req.body.filemode == git.TreeEntry.FileMode.Executable)

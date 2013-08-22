@@ -12,7 +12,7 @@ GitDB is designed to be both low latency and convenient. Its API:
 
 * minimizes network round-trips
 * supports compression ubiquitously
-* support patch/delta get and set operations
+* support patch/delta get and set operations -- *not yet implemented*
 * supports high concurrency thanks to an asynchronous programming model
 
 Finally, the API conveniently supports a variety of atomic-write and snapshot-read operations.
@@ -52,7 +52,7 @@ Whether you choose to follow links or construct them on your own is a practical 
 
 GitDB uses the HTTP verbs with a fairly standard interpretation. `POST` creates a new resource, `PUT` replaces a resource, `PATCH` updates a resource, and `DELETE` deletes a resource.
 
-Every resource in git is immutable except for references (e.g., a branch). So `PUT`, `PATCH`, and `DELETE, are only meaningful relative to a reference: that is, you may modify some files on a branch, but what happens under the covers is that new trees and blobs are created, a new commit is created, and the reference is updated to point to the new commit.
+Every resource in git is immutable except for references (e.g., a branch). So `PUT`, `PATCH`, and `DELETE`, are only meaningful relative to a reference: that is, you may modify some files on a branch, but what happens under the covers is that new trees and blobs are created, a new commit is created, and the reference is updated to point to the new commit.
 
 ## API Documentation
 
@@ -60,47 +60,47 @@ Every resource in git is immutable except for references (e.g., a branch). So `P
 
 Metadata about repositories hosted by GitDB.
 
-    [GET /repos](https://github.com/nkallen/gitdb/wiki/Repositories#get-all-repositories)
-    [GET /repos/:repo](https://github.com/nkallen/gitdb/wiki/Repositories#get-a-repository)
+* [`GET /repos`](https://github.com/nkallen/gitdb/wiki/Repositories#get-all-repositories)
+* [`GET /repos/:repo`](https://github.com/nkallen/gitdb/wiki/Repositories#get-a-repository)
 
 ### References
 
 References are typically tags and branches; in theory, they can "refer" to any kind of git object, but usually they refer to commits. "Tags" are usually immutable, whereas branches often change.
 
-    [GET /repo/:repo/refs](https://github.com/nkallen/gitdb/wiki/References#get-all-references)
-    [GET /repo/:repo/refs/:ref](https://github.com/nkallen/gitdb/wiki/References#get-a-reference)
+* [`GET /repo/:repo/refs`](https://github.com/nkallen/gitdb/wiki/References#get-all-references)
+* [`GET /repo/:repo/refs/:ref`](https://github.com/nkallen/gitdb/wiki/References#get-a-reference)
 
 You may want to view a file on a branch, or view the history (`git log`) of a branch:
 
-    [GET /repo/:repo/refs/:ref/log](https://github.com/nkallen/gitdb/wiki/References#get-the-history-of-a-reference)
-    [GET /repo/:repo/refs/:ref/tree/*](https://github.com/nkallen/gitdb/wiki/References#get-a-tree-relative-to-a-reference)
+* [`GET /repo/:repo/refs/:ref/log`](https://github.com/nkallen/gitdb/wiki/References#get-the-history-of-a-reference)
+* [`GET /repo/:repo/refs/:ref/tree/*`](https://github.com/nkallen/gitdb/wiki/References#get-a-tree-relative-to-a-reference)
 
 "Head refs" are how branches keep track of the current commit. You can make a commit to a branch in two ways: either you can update many files at once using `patch`, or you can edit just one file to make a more precise commit, using `put`. In either case, these are atomic operations; all updates succeed or none succeed, and the `If-Match` HTTP header to perform a kind of compare-and-set.
 
-    [PATCH /repo/:repo/refs/:ref](https://github.com/nkallen/gitdb/wiki/References#make-a-commit-to-a-reference)
-    [PUT /repo/:repo/refs/:ref/tree/*](https://github.com/nkallen/gitdb/wiki/References#create-or-update-a-file-on-a-reference)
+* [`PATCH /repo/:repo/refs/:ref`](https://github.com/nkallen/gitdb/wiki/References#make-a-commit-to-a-reference)
+* [`PUT /repo/:repo/refs/:ref/tree/*`](https://github.com/nkallen/gitdb/wiki/References#create-or-update-a-file-on-a-reference)
 
 ### Commits
 
 Individual commit objects can be part of a branch's (or reference's) history, or they can float off in the aether. Note: creating a new commit is idempotent.
 
-    [GET /repo/:repo/commits/:sha](https://github.com/nkallen/gitdb/wiki/Commits#get-a-commit)
-    [POST /repo/:repo/commits](https://github.com/nkallen/gitdb/wiki/Commits#create-a-commit)
+* [`GET /repo/:repo/commits/:sha`](https://github.com/nkallen/gitdb/wiki/Commits#get-a-commit)
+* [`POST /repo/:repo/commits`](https://github.com/nkallen/gitdb/wiki/Commits#create-a-commit)
 
 A branch potentially changes over time, but you can easily read the file system over many http requests at a specific point in time -- like a snapshot-read.
 
-    [GET /repo/:repo/commits/:sha/tree/*](https://github.com/nkallen/gitdb/wiki/Commits#get-a-tree-relative-to-a-commit)
+* [`GET /repo/:repo/commits/:sha/tree/*`](https://github.com/nkallen/gitdb/wiki/Commits#get-a-tree-relative-to-a-commit)
 
 ### Blobs
 
 Blobs are how files are represented in git; they can be binary and very large. Since they are referenced by their sha fingerprint, they are immutable.
 
-    [GET /repo/:repo/blobs/:sha](https://github.com/nkallen/gitdb/wiki/Blobs#get-a-blob)
-    [POST /repo/:repo/blobs -- not yet supported](https://github.com/nkallen/gitdb/wiki/Blobs#create-a-blob)
+* [`GET /repo/:repo/blobs/:sha`](https://github.com/nkallen/gitdb/wiki/Blobs#get-a-blob)
+* [`POST /repo/:repo/blobs`](https://github.com/nkallen/gitdb/wiki/Blobs#create-a-blob) -- *not yet implemented*
 
 ### Trees
 
 Trees represent the directory structure. Typically you will want to read a tree relative to a commit or a reference, but creating trees (and blobs) directly can sometimes be useful. For exampe, you may want to make several modifications over several HTTP requests, and then later commit them all atomically.
 
-    [GET /repo/:repo/trees/:sha/*](https://github.com/nkallen/gitdb/wiki/Trees#get-a-tree)
-    [POST /repo/:repo/trees -- not yet supported](https://github.com/nkallen/gitdb/wiki/Trees#create-a-tree)
+* [`GET /repo/:repo/trees/:sha/*`](https://github.com/nkallen/gitdb/wiki/Trees#get-a-tree)
+* [`POST /repo/:repo/trees`](https://github.com/nkallen/gitdb/wiki/Trees#create-a-tree) -- *not yet implemented*

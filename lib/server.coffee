@@ -9,4 +9,4 @@ resolver =
   list: () -> LIST
 
 app = require('./app')(resolver)
-app.listen(process.env.PORT)
+app.listen(process.env.PORT || 80)

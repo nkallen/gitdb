@@ -1,15 +1,15 @@
 {
   "name": "gitdb",
+  "main": "./lib/app.coffee",
   "version": "0.0.1",
   "description": "",
-  "main": "server.coffee",
   "scripts": {
     "start": "coffee --nodejs --prof lib/server.coffee",
     "test": "mocha --recursive --compilers coffee:coffee-script"
   },
   "dependencies": {
+    "coffee-script"  : "1.6.x",
     "express"        : "3.2.x",
-    "underscore"     : "1.4.x",
     "ejs"            : "0.8.x",
     "nodegit"        : "git://github.com/nodegit/nodegit.git#wip"
   },

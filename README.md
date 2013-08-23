@@ -1,8 +1,10 @@
-**GitDB** is a RESTful HTTP network service for reading and writing to git repositories. It is implemented in Coffeescript and uses the **nodegit** Javascript **libgit2** bindings.
+**GitDB** is a RESTful HTTP network service for reading and writing to git repositories. It is implemented in Coffeescript and uses the [**nodegit**](https://github.com/nodegit/nodegit) Javascript [**libgit2**](http://libgit2.github.com/) bindings.
+
+**Check out a live demo of the HTTP interface [here](http://gitdb.elasticbeanstalk.com/repos/gitdb/refs/heads/master/tree/README.md)**
 
 ## What is it good for?
 
-GitDB was originally designed for a **scalable**, git-backed, wiki. Typically, git-backed wikis host the web server and git repository on the same machine. This approach is difficult to scale: if your site gets popular and you need to add more web servers, you need also partition the git repository. To remedy this, GitDB wraps a git repository in a network service: now, the web server tier can be deployed in a normal shared-nothing configuration, communicating with GitDB over an HTTP REST interface; and the git tier can scale independently.
+GitDB was originally designed for a **scalable**, git-backed, wiki. Typically, git-backed wikis host the web server and git repository on the same machine. This approach is difficult to scale: if your site gets popular and you need to add more web servers, you need also partition the git repository. To remedy this, GitDB wraps a git repository in a network service: now, the web server tier can be deployed in a normal [shared-nothing configuration](http://en.wikipedia.org/wiki/Shared_nothing_architecture), communicating with GitDB over an HTTP REST interface; and the git tier can scale independently.
 
 One reason to use git as a datastore is that it models well the revision history of a corpus of documents, as in a wiki -- but git is, at its core, a durable store for blobs; trees; and directed, acyclic graphs; with a variety of atomic read and write operations. So GitDB may be useful in a variety of contexts.
 

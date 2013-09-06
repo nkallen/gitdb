@@ -79,3 +79,25 @@ describe 'tree_entries', ->
               .expect('Content-Type', /json/)
               .expect(201, done)
           )
+
+  describe 'create', ->
+    uri = '/repos/gitdb/trees'
+    describe 'json', ->
+      it 'works', (done) ->
+        request(app)
+          .post(uri)
+          .set('Accept', 'application/json')
+          .send(
+            paths: [
+              { filemode: git.TreeEntry.FileMode.Blob, sha: 'f84a43d3fd85d5ee9460ea238512e300a02d86ee', path: '.gitignore' },
+              { filemode: git.TreeEntry.FileMode.Blob, sha: 'f993ab7031358e67e00c1b039707e61db8e5e6dd', path: 'README.md' },
+              { filemode: git.TreeEntry.FileMode.Blob, sha: 'f993ab7031358e67e00c1b039707e61db8e5e6dd', path: 'README-test.md' },
+              { filemode: git.TreeEntry.FileMode.Blob, sha: '7ca55815246c09a324ac2eaadacba508efae4670', path: 'TODO' },
+              { filemode: git.TreeEntry.FileMode.Tree, sha: '854a1624a4323cce5bf47ab2bdd721f42d6bc97a', path: 'lib' },
+              { filemode: git.TreeEntry.FileMode.Blob, sha: 'be8f0f9a016acb443ae95c61336fd6f93a9033ce', path: 'package.json' },
+              { filemode: git.TreeEntry.FileMode.Tree, sha: '6206dc5e7bcff5872a13c27f6ec490b1992f5f80', path: 'test' }
+            ]
+            encoding: 'utf8'
+          )
+          .expect('Content-Type', /json/)
+          .expect(201, done)

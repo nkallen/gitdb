@@ -76,6 +76,19 @@ update = (req, res) ->
     )
   )
 
+create = (req, res) ->
+  builder = req.repo.treeBuilder(null)
+  for path in req.body.paths
+    builder.insert(path.path, git.Oid.fromString(path.sha, null), path.filemode)
+  builder.write (error, treeId) ->
+    return res.send(500, error) if error
+    res.format(
+      'application/json': () ->
+        res.location(url.treeEntry(req.repo, treeId))
+        res.send(201, {sha: treeId.toString()})
+    )
+
 module.exports =
   show: show
   update: update
+  create: create

@@ -41,6 +41,7 @@ module.exports = (resolver) ->
   app.get(url.commit(),             [load.repos, load.repo, load.commit, load.commit2diffList],                                   commits.show)
   app.get(url.commitTreeEntry(),    [load.repos, load.repo, load.commit, load.commit2tree, load.entry],                           treeEntries.show)
   app.get(url.treeEntry(),          [load.repos, load.repo, load.tree, load.entry],                                               treeEntries.show)
+  app.post(url.treeCreate(),        [load.repos, load.repo],                                                                      treeEntries.create)
   app.get('/', [load.repos],
     (req, res) -> res.render('index.html.ejs'))
 

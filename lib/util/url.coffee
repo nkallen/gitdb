@@ -50,3 +50,4 @@ module.exports =
   commit:             url('/repos/:repo/commits/:sha')
   commitTreeEntry:    url('/repos/:repo/commits/:sha/tree/*')
   treeEntry:          url('/repos/:repo/trees/:sha/*')
+  treeCreate:         url('/repos/:repo/trees')

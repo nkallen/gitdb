@@ -36,6 +36,7 @@ module.exports = (resolver) ->
   app.get(url.remoteRefTreeEntry(), [load.repos, load.repo, load.remoteRef, load.ref2commit, load.commit2tree, load.entry],       treeEntries.show)
   app.get(url.tagRefTreeEntry(),    [load.repos, load.repo, load.tagRef, load.ref2commit, load.commit2tree, load.entry],          treeEntries.show)
   app.get(url.blob(),               [load.repos, load.repo, load.blob],                                                           blobs.show)
+  app.post(url.blobCreate(),        [load.repos, load.repo],                                                                      blobs.create)
   app.post(url.commits(),           [load.repos, load.repo, load.parentCommit],                                                   commits.create)
   app.get(url.commit(),             [load.repos, load.repo, load.commit, load.commit2diffList],                                   commits.show)
   app.get(url.commitTreeEntry(),    [load.repos, load.repo, load.commit, load.commit2tree, load.entry],                           treeEntries.show)

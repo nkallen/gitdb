@@ -98,7 +98,7 @@ A branch potentially changes over time, but you can easily read the file system 
 Blobs are how files are represented in git; they can be binary and very large. Since they are referenced by their sha fingerprint, they are immutable.
 
 * [`GET /repo/:repo/blobs/:sha`](https://github.com/nkallen/gitdb/wiki/Blobs#get-a-blob)
-* [`POST /repo/:repo/blobs`](https://github.com/nkallen/gitdb/wiki/Blobs#create-a-blob) -- *not yet implemented*
+* [`POST /repo/:repo/blobs`](https://github.com/nkallen/gitdb/wiki/Blobs#create-a-blob)
 
 ### Trees
 

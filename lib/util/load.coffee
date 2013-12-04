@@ -2,11 +2,61 @@ git = require('nodegit')
 path = require('path')
 
 ###
-Preload data for controller *and* view tiers. cf, http://expressjs.com/api.html#res.locals
+Preload data for controller *and* view tiers
 ###
 
-module.exports = (resolver) ->
+class RootEntry
+  name: () -> ''
+  path: () -> ''
+  toString: () -> ''
+  filemode: () -> git.TreeEntry.FileMode.Tree
+  isTree: () -> true
+  isBlob: () -> false
+
+ref = (type) ->
+  (req, res, next) ->
+    req.repo.getReference("refs/#{type}/#{req.params.ref}", (err, ref) ->
+      return res.send(404, err) if err 
+
+      req.ref = res.locals.ref = ref
+      next()
+    )
+
+entry = (isOptional) -> (req, res, next) ->
+  if req.params[0] == ''
+    req.isTree = res.locals.isTree = true
+    req.tree = res.locals.tree = req.tree
+    req.entry = res.locals.entry = new RootEntry
+    req.entry.oid = () -> req.tree.oid()
+    next()
+  else
+    req.tree.getEntry(req.params[0], (err, entry) ->
+      return res.send(404, err) if err && !isOptional
+      next() if err && isOptional
+
+      req.entry = res.locals.entry = entry
+      if entry.isTree()
+        req.isTree = res.locals.isTree = true
+        entry.getTree((err, tree) ->
+          return res.send(404, err) if err
+
+          req.tree = res.locals.tree = tree
+          next()
+        )
+      else
+        req.isBlob = res.locals.isBlob = true
+        entry.getBlob((err, blob) ->
+          return res.send(404, err) if err
+
+          req.blob = res.locals.blob = blob
+          next()
+        )
+    )
+
+module.exports =
   repo: (req, res, next) ->
+    resolver = req.app.get('resolver')
+
     git.Repo.open(resolver.resolve(req.params.repo), (err, repo) ->
       return res.send(404, err) if err 
 
@@ -16,6 +66,7 @@ module.exports = (resolver) ->
     )
 
   repos: (req, res, next) ->
+    resolver = req.app.get('resolver')
     req.repos = res.locals.repos = resolver.list()
     next()
 
@@ -109,51 +160,3 @@ module.exports = (resolver) ->
 
   entryOptional: entry(true)
   entry: entry(false)
-
-class RootEntry
-  name: () -> ''
-  path: () -> ''
-  toString: () -> ''
-  filemode: () -> git.TreeEntry.FileMode.Tree
-  isTree: () -> true
-  isBlob: () -> false
-
-ref = (type) ->
-  (req, res, next) ->
-    req.repo.getReference("refs/#{type}/#{req.params.ref}", (err, ref) ->
-      return res.send(404, err) if err 
-
-      req.ref = res.locals.ref = ref
-      next()
-    )
-
-entry = (isOptional) -> (req, res, next) ->
-  if req.params[0] == ''
-    req.isTree = res.locals.isTree = true
-    req.tree = res.locals.tree = req.tree
-    req.entry = res.locals.entry = new RootEntry
-    req.entry.oid = () -> req.tree.oid()
-    next()
-  else
-    req.tree.getEntry(req.params[0], (err, entry) ->
-      return res.send(404, err) if err && !isOptional
-      next() if err && isOptional
-
-      req.entry = res.locals.entry = entry
-      if entry.isTree()
-        req.isTree = res.locals.isTree = true
-        entry.getTree((err, tree) ->
-          return res.send(404, err) if err
-
-          req.tree = res.locals.tree = tree
-          next()
-        )
-      else
-        req.isBlob = res.locals.isBlob = true
-        entry.getBlob((err, blob) ->
-          return res.send(404, err) if err
-
-          req.blob = res.locals.blob = blob
-          next()
-        )
-    )

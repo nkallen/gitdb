@@ -1,5 +1,4 @@
-helper = require('../helper')
-app = require('../../lib/app')(helper.resolver)
+app = require('../../lib/server')
 request = require('supertest')
 
 describe 'blobs', ->

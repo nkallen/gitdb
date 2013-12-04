@@ -1,7 +1,4 @@
-. deploy via elastic beanstalk
-
-LATER
-
+. make resovler an app.set()
 . support deltas/patches
 . tree resource with GET/POST
   . POST commit/create should accept tree id

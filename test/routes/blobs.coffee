@@ -25,3 +25,17 @@ describe 'blobs', ->
           .set('Accept', 'application/vnd.gitdb.raw')
           .expect('Content-Type', /raw/)
           .expect(200, done)
+
+  describe 'create', ->
+    uri = '/repos/gitdb/blobs'
+    describe 'json', ->
+      it 'works', (done) ->
+        request(app)
+          .post(uri)
+          .set('Accept', 'application/json')
+          .send(
+            content: 'dGVzdA=='
+            encoding: 'base64'
+          )
+          .expect('Content-Type', /json/)
+          .expect(201, done)

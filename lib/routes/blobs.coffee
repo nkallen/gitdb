@@ -1,4 +1,5 @@
 render = require('../util/render')
+url = require('../util/url')
 
 show = (req, res) ->
   res.format(
@@ -10,5 +11,15 @@ show = (req, res) ->
       res.json(req.blob.content())
   )
 
+create = (req, res) ->
+  req.repo.createBlobFromBuffer new Buffer(req.body.content, req.body.encoding), (error, blobId) ->
+    return res.send(500, error) if error
+    res.format(
+      'application/json': () ->
+        res.location(url.blob(req.repo, blobId))
+        res.send(201, {sha: blobId.toString()})
+    )
+
 module.exports =
   show: show
+  create: create

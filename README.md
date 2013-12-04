@@ -105,4 +105,4 @@ Blobs are how files are represented in git; they can be binary and very large. S
 Trees represent the directory structure. Typically you will want to read a tree relative to a commit or a reference, but creating trees (and blobs) directly can sometimes be useful. For exampe, you may want to make several modifications over several HTTP requests, and then later commit them all atomically.
 
 * [`GET /repo/:repo/trees/:sha/*`](https://github.com/nkallen/gitdb/wiki/Trees#get-a-tree)
-* [`POST /repo/:repo/trees`](https://github.com/nkallen/gitdb/wiki/Trees#create-a-tree) -- *not yet implemented*
+* [`POST /repo/:repo/trees`](https://github.com/nkallen/gitdb/wiki/Trees#create-a-tree)
